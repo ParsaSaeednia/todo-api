@@ -28,14 +28,12 @@ A robust REST API for managing todo items built with Express.js, TypeScript, and
 ## 🔧 Installation
 
 1. **Clone the repository**
-
    ```bash
    git clone <repository-url>
    cd express-app
    ```
 
 2. **Install dependencies**
-
    ```bash
    npm install
    ```
@@ -45,9 +43,17 @@ A robust REST API for managing todo items built with Express.js, TypeScript, and
    npm run dev
    ```
 
-The server will start on `http://localhost:3000`
+   The application will automatically:
+   - Create a `db.sqlite` database file in the project root
+   - Set up the database schema
+   - Start the server on `http://localhost:3000`
 
 ## 📖 Usage
+
+Once the server is running, you can:
+
+- **View API Documentation**: Visit `http://localhost:3000/api-docs`
+- **Test the API**: Use the Swagger UI or make HTTP requests to the endpoints
 
 ### API Endpoints
 
@@ -110,7 +116,7 @@ express-app/
 │   │   └── todo.ts            # Sequelize data models
 │   └── routes/
 │       └── todo.ts            # Route definitions
-├── db.sqlite                  # SQLite database file
+├── db.sqlite                  # SQLite database file (auto-generated)
 ├── package.json
 ├── tsconfig.json             # TypeScript configuration
 └── README.md
@@ -125,7 +131,7 @@ express-app/
 
 The application uses SQLite as the database:
 
-- **File**: `db.sqlite`
+- **File**: `db.sqlite` (automatically created in project root)
 - **ORM**: Sequelize
 - **Auto-sync**: Database schema is automatically created/updated on startup
 
