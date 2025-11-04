@@ -6,62 +6,6 @@ import {
   updateTodo as updateTodoService,
   deleteTodo as deleteTodoService,
 } from "../services/todoService";
-//----------------------------------------------------------
-/**
- * @swagger
- * components:
- *   schemas:
- *     Todo:
- *       type: object
- *       required:
- *         - title
- *       properties:
- *         id:
- *           type: integer
- *           description: The auto-generated id of the todo
- *         title:
- *           type: string
- *           description: The title of the todo
- *         description:
- *           type: string
- *           description: The description of the todo
- *         completed:
- *           type: boolean
- *           description: Whether the todo is completed
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: The date the todo was created
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: The date the todo was last updated
- *       example:
- *         id: 1
- *         title: My Todo
- *         description: This is a todo
- *         completed: false
- *         createdAt: 2023-01-01T00:00:00.000Z
- *         updatedAt: 2023-01-01T00:00:00.000Z
- */
-
-/**
- * @swagger
- * /api/todos:
- *   get:
- *     summary: Get all todos
- *     responses:
- *       200:
- *         description: A list of todos
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Todo'
- *       500:
- *         description: Internal server error
- */
 export async function getTodos(_req: Request, res: Response): Promise<void> {
   try {
     const todos = await getAllTodosService();
@@ -70,31 +14,6 @@ export async function getTodos(_req: Request, res: Response): Promise<void> {
     res.status(500).json({ error: "Failed to fetch todos" });
   }
 }
-//----------------------------------------------------------
-/**
- * @swagger
- * /api/todos/{id}:
- *   get:
- *     summary: Get a todo by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: The todo ID
- *     responses:
- *       200:
- *         description: A single todo
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Todo'
- *       404:
- *         description: Todo not found
- *       500:
- *         description: Internal server error
- */
 export async function getTodo(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
@@ -108,37 +27,6 @@ export async function getTodo(req: Request, res: Response): Promise<void> {
     res.status(500).json({ error: "Failed to fetch todo" });
   }
 }
-//----------------------------------------------------------
-/**
- * @swagger
- * /api/todos:
- *   post:
- *     summary: Create a new todo
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *             properties:
- *               title:
- *                 type: string
- *               description:
- *                 type: string
- *               completed:
- *                 type: boolean
- *     responses:
- *       201:
- *         description: Todo created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Todo'
- *       500:
- *         description: Internal server error
- */
 export async function createTodo(req: Request, res: Response): Promise<void> {
   try {
     const { title, description } = req.body;
@@ -148,44 +36,6 @@ export async function createTodo(req: Request, res: Response): Promise<void> {
     res.status(500).json({ error: "Failed to create todo" });
   }
 }
-//----------------------------------------------------------
-/**
- * @swagger
- * /api/todos/{id}:
- *   put:
- *     summary: Update a todo
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: The todo ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               description:
- *                 type: string
- *               completed:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: Todo updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Todo'
- *       404:
- *         description: Todo not found
- *       500:
- *         description: Internal server error
- */
 export async function updateTodo(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
@@ -200,27 +50,6 @@ export async function updateTodo(req: Request, res: Response): Promise<void> {
     res.status(500).json({ error: "Failed to update todo" });
   }
 }
-//----------------------------------------------------------
-/**
- * @swagger
- * /api/todos/{id}:
- *   delete:
- *     summary: Delete a todo
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: The todo ID
- *     responses:
- *       204:
- *         description: Todo deleted
- *       404:
- *         description: Todo not found
- *       500:
- *         description: Internal server error
- */
 export async function deleteTodo(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
