@@ -1,30 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
+import { getRegisteredOperations } from "./annotations";
 
-const jsonResponse = (
-  description: string,
-  schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject
-): OpenAPIV3.ResponseObject => ({
-  description,
-  content: {
-    "application/json": {
-      schema,
-    },
-  },
-});
-
-const errorResponse = (description: string): OpenAPIV3.ResponseObject => ({
-  description,
-  content: {
-    "application/json": {
-      schema: {
-        type: "object",
-        properties: {
-          error: { type: "string" },
-        },
-      },
-    },
-  },
-});
+import "../controllers/todoController";
 
 const todoSchema: OpenAPIV3.SchemaObject = {
   type: "object",
@@ -76,15 +53,14 @@ const todoInputSchema: OpenAPIV3.SchemaObject = {
   },
 };
 
-const todoIdParameter: OpenAPIV3.ParameterObject = {
-  in: "path",
-  name: "id",
-  required: true,
-  description: "The todo ID",
-  schema: { type: "integer" },
+const errorResponseSchema: OpenAPIV3.SchemaObject = {
+  type: "object",
+  properties: {
+    error: { type: "string" },
+  },
 };
 
-const swaggerDocument: OpenAPIV3.Document = {
+const document: OpenAPIV3.Document = {
   openapi: "3.0.0",
   info: {
     title: "Todo API",
@@ -101,83 +77,73 @@ const swaggerDocument: OpenAPIV3.Document = {
     schemas: {
       Todo: todoSchema,
       TodoInput: todoInputSchema,
-      ErrorResponse: {
-        type: "object",
-        properties: {
-          error: { type: "string" },
-        },
-      },
-    },
-    parameters: {
-      TodoId: todoIdParameter,
+      ErrorResponse: errorResponseSchema,
     },
   },
-  paths: {
-    "/api/todos": {
-      get: {
-        summary: "Get all todos",
-        responses: {
-          200: jsonResponse("A list of todos", {
-            type: "array",
-            items: { $ref: "#/components/schemas/Todo" },
-          }),
-          500: errorResponse("Failed to fetch todos"),
-        },
-      },
-      post: {
-        summary: "Create a new todo",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/TodoInput" },
-            },
-          },
-        },
-        responses: {
-          201: jsonResponse("Todo created", { $ref: "#/components/schemas/Todo" }),
-          500: errorResponse("Failed to create todo"),
-        },
-      },
-    },
-    "/api/todos/{id}": {
-      get: {
-        summary: "Get a todo by ID",
-        parameters: [{ $ref: "#/components/parameters/TodoId" }],
-        responses: {
-          200: jsonResponse("A single todo", { $ref: "#/components/schemas/Todo" }),
-          404: errorResponse("Todo not found"),
-          500: errorResponse("Failed to fetch todo"),
-        },
-      },
-      put: {
-        summary: "Update a todo",
-        parameters: [{ $ref: "#/components/parameters/TodoId" }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/TodoInput" },
-            },
-          },
-        },
-        responses: {
-          200: jsonResponse("Todo updated", { $ref: "#/components/schemas/Todo" }),
-          404: errorResponse("Todo not found"),
-          500: errorResponse("Failed to update todo"),
-        },
-      },
-      delete: {
-        summary: "Delete a todo",
-        parameters: [{ $ref: "#/components/parameters/TodoId" }],
-        responses: {
-          204: { description: "Todo deleted" },
-          404: errorResponse("Todo not found"),
-          500: errorResponse("Failed to delete todo"),
-        },
-      },
-    },
-  },
+  paths: {},
 };
 
-export default swaggerDocument;
+const paths: OpenAPIV3.PathsObject = {};
+
+for (const operation of getRegisteredOperations()) {
+  const pathItem = (paths[operation.path] ??= {});
+
+  const responses: OpenAPIV3.ResponsesObject = {};
+  for (const response of operation.responses) {
+    const responseObject: OpenAPIV3.ResponseObject = {
+      description: response.description,
+    };
+
+    if (response.schema) {
+      const contentType = response.contentType ?? "application/json";
+      responseObject.content = {
+        [contentType]: {
+          schema: response.schema,
+        },
+      };
+    }
+
+    responses[response.status.toString()] = responseObject;
+  }
+
+  const parameters = operation.parameters.map<OpenAPIV3.ParameterObject>((parameter) => ({
+    name: parameter.name,
+    in: parameter.in ?? "path",
+    required: parameter.required ?? true,
+    description: parameter.description,
+    schema: parameter.schema,
+  }));
+
+  const requestBody = operation.requestBody
+    ? {
+        description: operation.requestBody.description,
+        required: operation.requestBody.required,
+        content: {
+          [operation.requestBody.contentType ?? "application/json"]: {
+            schema: operation.requestBody.schema,
+          },
+        },
+      }
+    : undefined;
+
+  const operationObject: OpenAPIV3.OperationObject = {
+    summary: operation.summary,
+    description: operation.description,
+    tags: operation.tags.length ? operation.tags : undefined,
+    responses,
+  };
+
+  if (parameters.length) {
+    operationObject.parameters = parameters;
+  }
+
+  if (requestBody) {
+    operationObject.requestBody = requestBody;
+  }
+
+  pathItem[operation.method] = operationObject;
+}
+
+document.paths = paths;
+
+export default document;
